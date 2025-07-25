@@ -9,3 +9,6 @@
 - Live cryptocurrency price updates
 - Neat and minimal UI (v1)
 - Dockerized for eas
+
+
+- just some random text
