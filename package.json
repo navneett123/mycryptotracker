@@ -1,0 +1,21 @@
+{
+  "name": "crypto-dashboard",
+  "version": "1.0.0",
+  "description": "V1 - Real-time crypto price dashboard using Node.js, Express, CoinGecko API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["crypto", "dashboard", "node", "express", "docker", "coingecko"],
+  "author": "your-name",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
