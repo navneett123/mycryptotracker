@@ -6,47 +6,53 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME     = "mycryptotracker"
-        IMAGE_TAG      = "v1.0"
-        CONTAINER_NAME = "mycryptotracker_container"
+        IMAGE_NAME      = "mycryptotracker"
+        IMAGE_TAG       = "v1.0"
+        FULL_IMAGE      = "navneet78/${IMAGE_NAME}:${IMAGE_TAG}"
+        CONTAINER_NAME  = "mycryptotracker_container"
     }
 
     stages {
-        stage('Checkout') {
+
+        stage('📥 Checkout Code') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('🐳 Build & Push Docker Image') {
             steps {
-                script {
-                    echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+                sh "docker build -t ${FULL_IMAGE} ."
+
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
                     sh """
-                        docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                        echo "$PASS" | docker login -u "$USER" --password-stdin
+                        docker push ${FULL_IMAGE}
+                        docker logout
                     """
                 }
             }
         }
 
-        stage('Stop Existing Container (if running)') {
+        stage('🧹 Stop Old Container (if any)') {
             steps {
-                script {
-                    sh """
-                        docker ps -q --filter "name=${CONTAINER_NAME}" | grep -q . && docker stop ${CONTAINER_NAME} || echo "No container to stop"
-                        docker rm -f ${CONTAINER_NAME} || true
-                    """
-                }
+                sh """
+                    docker ps -q --filter "name=${CONTAINER_NAME}" | grep -q . && docker stop ${CONTAINER_NAME} || true
+                    docker rm -f ${CONTAINER_NAME} || true
+                """
             }
         }
 
-        stage('Run Updated Container') {
+        stage('🚀 Run Container from Docker Hub') {
             steps {
-                script {
-                    sh """
-                        docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${IMAGE_NAME}:${IMAGE_TAG}
-                    """
-                }
+                sh """
+                    docker pull ${FULL_IMAGE}
+                    docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${FULL_IMAGE}
+                """
             }
         }
     }
