@@ -6,15 +6,17 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME      = "mycryptotracker"
-        IMAGE_TAG       = "v1.0"
-        FULL_IMAGE      = "navneet78/${IMAGE_NAME}:${IMAGE_TAG}"
-        CONTAINER_NAME  = "mycryptotracker_container"
+        IMAGE_NAME       = "mycryptotracker"
+        IMAGE_TAG        = "v1.0"
+        DOCKER_USER      = "navneet78"
+        FULL_IMAGE       = "${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+        CONTAINER_NAME   = "mycryptotracker_container"
+        META_FILE        = "build-info.json"
     }
 
     stages {
 
-        stage('📥 Checkout Code') {
+        stage('📥 Checkout Source Code') {
             steps {
                 checkout scm
             }
@@ -22,23 +24,47 @@ pipeline {
 
         stage('🐳 Build & Push Docker Image') {
             steps {
-                sh "docker build -t ${FULL_IMAGE} ."
+                script {
+                    sh "docker build -t ${FULL_IMAGE} ."
 
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-                    sh """
-                        echo "$PASS" | docker login -u "$USER" --password-stdin
-                        docker push ${FULL_IMAGE}
-                        docker logout
-                    """
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub-creds',
+                            usernameVariable: 'USER',
+                            passwordVariable: 'PASS'
+                        )
+                    ]) {
+                        sh """
+                            echo "$PASS" | docker login -u "$USER" --password-stdin
+                            docker push ${FULL_IMAGE}
+                            docker logout
+                        """
+                    }
                 }
             }
         }
 
-        stage('🧹 Stop Old Container (if any)') {
+        stage('📝 Generate Build Metadata') {
+            steps {
+                script {
+                    def commitId  = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                    def timestamp = sh(script: 'date -u +"%Y-%m-%dT%H:%M:%SZ"', returnStdout: true).trim()
+
+                    def metadata = """
+                    {
+                      "image": "${FULL_IMAGE}",
+                      "tag": "${IMAGE_TAG}",
+                      "commit": "${commitId}",
+                      "timestamp": "${timestamp}"
+                    }
+                    """.stripIndent().trim()
+
+                    writeFile file: META_FILE, text: metadata
+                }
+            }
+        }
+
+        stage('🧹 Stop Existing Container') {
             steps {
                 sh """
                     docker ps -q --filter "name=${CONTAINER_NAME}" | grep -q . && docker stop ${CONTAINER_NAME} || true
@@ -54,6 +80,12 @@ pipeline {
                     docker run -d --name ${CONTAINER_NAME} -p 3000:3000 ${FULL_IMAGE}
                 """
             }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: "${META_FILE}", fingerprint: true
         }
     }
 }
