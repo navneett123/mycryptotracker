@@ -29,6 +29,11 @@ fetchPrices();
 setInterval(fetchPrices, 10000);
 
 // Dark mode toggle
-document.getElementById("darkToggle").addEventListener("change", (e) => {
-  document.body.classList.toggle("dark", e.target.checked);
+const toggle = document.getElementById("darkToggle");
+const modeLabel = document.getElementById("modeLabel");
+
+toggle.addEventListener("change", (e) => {
+  const isDark = e.target.checked;
+  document.body.classList.toggle("dark", isDark);
+  modeLabel.textContent = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
 });

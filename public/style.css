@@ -13,15 +13,34 @@ body {
   padding: 0 20px;
 }
 
-h1 {
-  font-size: 2.5rem;
+/* Header layout with toggle */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   margin-bottom: 20px;
+}
+
+/* Toggle text label */
+#modeLabel {
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  vertical-align: middle;
   color: #333;
 }
 
+h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  color: #333;
+}
+
+/* Toggle switch */
 .toggle-container {
-  text-align: right;
-  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .switch {
@@ -103,25 +122,29 @@ input:checked + .slider:before {
   color: #888;
 }
 
-/* Dark Mode */
+/* DARK MODE OVERRIDES */
 body.dark {
   background-color: #121212;
-  color: #e0e0e0;
+  color: orange;
+}
+
+body.dark h1 {
+  color: orange;
 }
 
 body.dark .card {
   background: #1e1e1e;
-  color: #eee;
-}
-
-body.dark h1 {
-  color: #fff;
+  color: orange;
 }
 
 body.dark .price {
-  color: #90caf9;
+  color: orange;
 }
 
 body.dark .footer {
-  color: #bbb;
+  color: #ffaa33;
+}
+
+body.dark #modeLabel {
+  color: orange;
 }
