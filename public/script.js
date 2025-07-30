@@ -1,9 +1,13 @@
+let COINS = ["bitcoin", "ethereum", "solana", "dogecoin"];
 const priceCards = document.getElementById("price-cards");
 
 async function fetchPrices() {
   try {
-    const res = await fetch("/api/prices");
+    const ids = COINS.join(',');
+    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`;
+    const res = await fetch(url);
     const data = await res.json();
+
     priceCards.innerHTML = "";
 
     for (const [coin, details] of Object.entries(data)) {
@@ -11,7 +15,7 @@ async function fetchPrices() {
       card.className = "card";
       card.innerHTML = `
         <h2>${coin.toUpperCase()}</h2>
-        <div class="price">$${details.usd.toLocaleString()}</div>
+        <div class="price">$${details.usd?.toLocaleString() ?? 'N/A'}</div>
       `;
       priceCards.appendChild(card);
     }
@@ -20,5 +24,11 @@ async function fetchPrices() {
   }
 }
 
+// Initial + auto refresh
 fetchPrices();
 setInterval(fetchPrices, 10000);
+
+// Dark mode toggle
+document.getElementById("darkToggle").addEventListener("change", (e) => {
+  document.body.classList.toggle("dark", e.target.checked);
+});
