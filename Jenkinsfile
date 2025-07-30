@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         IMAGE_NAME       = "mycryptotracker"
-        IMAGE_TAG        = "v1.0"
+        IMAGE_TAG        = "v3.0"
         DOCKER_USER      = "navneet78"
         FULL_IMAGE       = "${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
         CONTAINER_NAME   = "mycryptotracker_container"
